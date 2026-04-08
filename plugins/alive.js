@@ -1,114 +1,58 @@
-const { cmd } = require('../command');
+const { cmd, commands } = require('../command');
 const os = require("os");
 const { runtime } = require('../lib/functions');
-const config = require('../settings');
 
-// Fake quoted contact
-const qMessage = {
-  key: {
-    fromMe: false,
-    remoteJid: "status@broadcast",
-    participant: "0@s.whatsapp.net",
-  },
-  message: {
-    contactMessage: {
-      displayName: "𝙃𝙄𝙍𝙐 𝙓 𝙈𝘿 ",
-      vcard: `BEGIN:VCARD
-VERSION:3.0
-FN:SASA
-TEL:+94784167385
-END:VCARD`
-    }
-  }
-};
-
-// RAM Bar Generator
-function generateRamBar(used, total, length = 10) {
-  const percent = used / total;
-  const filledLength = Math.round(length * percent);
-  return "█".repeat(filledLength) + "░".repeat(length - filledLength);
-}
-
-// ALIVE COMMAND
 cmd({
-  pattern: "alive",
-  alias: ["status","online"],
-  desc: "Check bot status",
-  category: "main",
-  react: "🐍",
-  filename: __filename
-}, async (conn, mek, m, { from }) => {
-  try {
-    const now = new Date();
-    const time = now.toLocaleTimeString("en-US", {
-      timeZone: "Asia/Colombo",
-      hour12: true,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
+    pattern: "alive",
+    alias: ["status", "runtime", "uptime"],
+    desc: "Check uptime and system status",
+    category: "main",
+    react: "🐍",
+    filename: __filename
+},
+async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+    try {
+        // Generate system status message
+        const status = `          
+╭━━〔 *🐍 𝐒𝐀𝐒𝐀 𝐗 𝐌𝐃 🐍* 〕━━┈⊷
+┃◈╭─────────────·๏
+┃◈┃• *👋 ʜɪ*: ${pushname}
+┃◈┃• *⏳ ᴜᴘᴛɪᴍᴇ*:  ${runtime(process.uptime())} 
+┃◈┃• *📟 ʀᴀᴍ*: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB / ${(os.totalmem() / 1024 / 1024).toFixed(2)}MB
+┃◈┃• *👨‍💻 ᴏᴡɴᴇʀ*: ᴍʀ.ꜱᴀꜱᴀɴᴋᴀ ᴄʜᴀᴍᴜᴛʜ ꜰᴅᴏ </>
+┃◈└───────────┈⊷
+╰──────────────┈⊷
 
-    const emojiMap = {
-      "➀": "𝟬", "➀": "𝟭➀", "➁": "𝟮", "➂": "𝟯",
-      "➃": "𝟰", "➄": "𝟱", "➅": "𝟲", "➆": "𝟳",
-      "➇": "𝟴", "➈": "𝟵", ":": ":", "𝗔": "𝗔",
-      "𝗣": "𝗣", "𝗠": "𝗠", " ": " "
-    };
-    const toEmoji = str => str.split("").map(c => emojiMap[c] || c).join("");
-    const emojiTime = toEmoji(time);
+*𝐒𝐀𝐒𝐀 𝐗 𝐌𝐃 𝐌𝐔𝐋𝐓𝐈 𝐃𝐄𝐕𝐈𝐂𝐄 𝐖𝐇𝐀𝐓𝐒𝐀𝐏𝐏 𝐁𝐎𝐓 𝐂𝐑𝐄𝐀𝐓𝐄𝐃 𝐁𝐘 𝐌𝐑.𝐒𝐀𝐒𝐀𝐍𝐊𝐀 𝐂𝐇𝐀𝐌𝐔𝐓𝐇 😼🩸*
 
-    const totalRam = (os.totalmem() / 1024 / 1024).toFixed(0);
-    const usedRam = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(0);
-    const ramBar = generateRamBar(+usedRam, +totalRam);
+ *𝐅𝐎𝐋𝐋𝐎𝐖 𝐎𝐔𝐑 𝐖𝐇𝐀𝐓𝐒𝐀𝐏𝐏 𝐂𝐇𝐀𝐍𝐍𝐄𝐋𝐒 😊💓
+     
+*https://whatsapp.com/channel/0029VbCWZks7j6gFBZH8Fw42*
 
-    const ramInfo = `💾 RAM: [${ramBar}] ${usedRam}/${totalRam}MB`;
+  
+> *𝐏𝐎𝐖𝐄𝐑𝐃 𝐁𝐘 𝐒𝐀𝐒𝐀𝐍𝐊𝐀 𝐂𝐇𝐀𝐌𝐔𝐓𝐇 🐍*`;
 
-    const hour = parseInt(now.toLocaleString("en-US", {
-      hour: "2-digit", hour12: false, timeZone: "Asia/Colombo"
-    }));
-    let greeting = "Hello!";
-    if (hour >= 5 && hour < 12) greeting = "🌞 Good Morning!";
-    else if (hour >= 12 && hour < 17) greeting = "☀️ Good Afternoon!";
-    else if (hour >= 17 && hour < 20) greeting = "🌇 Good Evening!";
-    else greeting = "🌙 Good Night!";
 
-    const status = `
-*🐍 𝐒𝐀𝐒𝐀 𝐗 𝐌𝐃 𝐁𝐎𝐓 𝐀𝐋𝐈𝐕𝐄 𝐍𝐎𝐖 🐍*
-*╭──────────●●►*
-*│👋* ${greeting}
-*│⚡ Status:* Online
-*│🥷 Owner:* Sasanka Chamuth Fdo
-*│📱 Owner Nb:* +94784167385
-*│👀 Owner Age:* 16
-*│☘️ Mode:* ${config.MODE === "Public" ? "🌍 Public" : "🔐 Private"}
-*│⌚ Time:* ${emojiTime}
-*│⏱️ Uptime:* ${runtime(process.uptime())}
-${ramInfo}
-*│💻 Host:* ${os.hostname()}
-*╰──────────●●►*
+        await conn.sendMessage(from, { 
+            image: { url: `https://i.ibb.co/mCQb6Vf9/d0966e62ac8e.jpg` },  // Image URL
+            caption: status,
+            contextInfo: {
+                mentionedJid: [m.sender],
+                forwardingScore: 999,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363395674230271@newsletter',
+                    newsletterName: 'SASA-X-MD',
+                    serverMessageId: 190
+                }
+            }
+        }, { quoted: mek });
 
-> *𝐒𝐀𝐒𝐀 𝐗 𝐌𝐃 *`;
-
-    // Fixed image and video (optional)
-    const imageUrl = 'https://i.ibb.co/DPd51BK7/2c47d62ecc68.jpg';
-    const videoUrl = 'https://files.catbox.moe/1qcic3.mp4';
-
-    // Send PTV video (optional)
-    await conn.sendMessage(from, {
-      video: { url: videoUrl },
-      mimetype: 'video/mp4',
-      ptv: true
-    }, { quoted: qMessage });
-
-    // Send image with caption
-    await conn.sendMessage(from, {
-      image: { url: imageUrl },
-      caption: status
-    }, { quoted: qMessage });
-
-  } catch (e) {
-    console.error("Alive Error:", e);
-    m.reply("❌ Alive command error:\n" + e.message);
-  }
+    } catch (e) {
+        console.error("Error in alive command:", e);
+        reply(`An error occurred: ${e.message}`);
+    }
 });
+
+
 
